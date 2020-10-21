@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Envis10n.TelNet.Constants;
 
 namespace Envis10n.TelNet
@@ -41,7 +42,15 @@ namespace Envis10n.TelNet
     public sealed class CompatibilityTable
     {
         private readonly byte[] _table = new byte[256];
-
+        public CompatibilityTable() {}
+        public CompatibilityTable(IEnumerable<Tuple<byte, byte>> supported)
+        {
+            foreach (Tuple<byte, byte> sup in supported)
+            {
+                CompatibilityEntry entry = sup.Item2;
+                SetOption(sup.Item1, entry);
+            }
+        }
         public void SupportLocal(byte option)
         {
             CompatibilityEntry entry = _table[option];
