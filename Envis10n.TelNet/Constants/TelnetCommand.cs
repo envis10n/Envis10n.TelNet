@@ -21,6 +21,7 @@
             IS = 0,
             SEND = 1,
             /** Go Ahead */
-            GA = 249;
+            GA = 249,
+            EOR = 239;
     }
 }

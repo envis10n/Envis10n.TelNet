@@ -3,6 +3,14 @@ using System.Collections.Generic;
 
 namespace Envis10n.TelNet
 {
+    using Constants;
+    enum ParseState
+    {
+        Normal,
+        Iac,
+        Neg,
+        Sub
+    }
     public class Parser
     {
         public CompatibilityTable Options = new CompatibilityTable();
@@ -26,14 +34,81 @@ namespace Envis10n.TelNet
         private List<ITelnetEvent> Process()
         {
             List<ITelnetEvent> events = new List<ITelnetEvent>();
-            // Skip processing time if there is nothing to do.
+            // Skip processing if there is nothing to do.
             if (_buffer.Length > 0)
             {
-                // TODO: Handle processing.
+                ParseState iterState = ParseState.Normal;
+                int cmdBegin = 0;
+                for (int i = 0; i < _buffer.Length; i++)
+                {
+                    byte val = _buffer[i];
+                    switch (iterState)
+                    {
+                        case ParseState.Normal:
+                            if (val == TelnetCommand.IAC)
+                            {
+                                if (cmdBegin < i)
+                                {
+                                    events.Add(new TelnetDataEvent(Utility.Enumerables.Slice(_buffer, cmdBegin, i)));
+                                }
+                                cmdBegin = i;
+                                iterState = ParseState.Iac;
+                            }
+                            break;
+                        case ParseState.Iac:
+                            switch (val)
+                            {
+                                case TelnetCommand.IAC:
+                                    iterState = ParseState.Normal;
+                                    break;
+                                case TelnetCommand.GA:
+                                case TelnetCommand.EOR:
+                                case TelnetCommand.NOP:
+                                    events.Add(new TelnetIacEvent(Utility.Enumerables.Slice(_buffer, cmdBegin, i + 1)));
+                                    cmdBegin = i + 1;
+                                    iterState = ParseState.Normal;
+                                    break;
+                                case TelnetCommand.SB:
+                                    iterState = ParseState.Sub;
+                                    break;
+                                default:
+                                    iterState = ParseState.Neg;
+                                    break;
+                            }
+                            break;
+                        case ParseState.Neg:
+                            events.Add(new TelnetNegotiationEvent(Utility.Enumerables.Slice(_buffer, cmdBegin, i + 1)));
+                            cmdBegin = i + 1;
+                            iterState = ParseState.Normal;
+                            break;
+                        case ParseState.Sub:
+                            if (val == TelnetCommand.SE)
+                            {
+                                // End of subnegotiation
+                                byte opt = _buffer[cmdBegin + 2];
+                                events.Add(new TelnetSubNegotiationEvent(Utility.Enumerables.Slice(_buffer, cmdBegin, i + 1)));
+                                if (opt == TelnetOption.MCCP2 || opt == TelnetOption.MCCP3)
+                                {
+                                    // Data after requires decompression.
+                                    events.Add(new TelnetDecompressEvent(Utility.Enumerables.Slice(_buffer, i + 1, _buffer.Length)));
+                                    cmdBegin = _buffer.Length;
+                                    i = _buffer.Length;
+                                }
+                                else cmdBegin = i + 1;
+                                iterState = ParseState.Normal;
+                            }
+                            break;
+                    }
+                }
+                if (cmdBegin < _buffer.Length)
+                {
+                    events.Add(new TelnetDataEvent(Utility.Enumerables.Slice(_buffer, cmdBegin,  _buffer.Length)));
+                }
+
+                _buffer = new byte[0];
             }
             return events;
         }
-
         public static byte[] EscapeIac(byte[] buffer)
         {
             List<byte> temp = new List<byte>();

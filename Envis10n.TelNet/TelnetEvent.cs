@@ -18,6 +18,52 @@ namespace Envis10n.TelNet
         public TelnetEventType EventType { get; }
         public byte[] ToBytes();
     }
+
+    public class TelnetDataEvent : ITelnetEvent
+    {
+        public TelnetEventType EventType { get; } = TelnetEventType.DataReceive;
+        public byte[] Buffer { get; }
+
+        public TelnetDataEvent(byte[] buffer)
+        {
+            Buffer = buffer;
+        }
+
+        public byte[] ToBytes()
+        {
+            return Buffer;
+        }
+    }
+    public class TelnetSendEvent : ITelnetEvent
+    {
+        public TelnetEventType EventType { get; } = TelnetEventType.DataSend;
+        public byte[] Buffer { get; }
+
+        public TelnetSendEvent(byte[] buffer)
+        {
+            Buffer = buffer;
+        }
+
+        public byte[] ToBytes()
+        {
+            return Buffer;
+        }
+    }
+    public class TelnetDecompressEvent : ITelnetEvent
+    {
+        public TelnetEventType EventType { get; } = TelnetEventType.DecompressImmediate;
+        public byte[] Buffer { get; }
+
+        public TelnetDecompressEvent(byte[] buffer)
+        {
+            Buffer = buffer;
+        }
+
+        public byte[] ToBytes()
+        {
+            return Buffer;
+        }
+    }
     public class TelnetIacEvent : ITelnetEvent
     {
         public TelnetEventType EventType { get; } = TelnetEventType.Iac;
