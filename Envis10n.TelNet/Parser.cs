@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Envis10n.TelNet
 {
@@ -14,6 +15,7 @@ namespace Envis10n.TelNet
     public class Parser
     {
         public CompatibilityTable Options = new CompatibilityTable();
+        public Encoding TextEncoding = Encoding.UTF8;
         private byte[] _buffer = new byte[0];
         public Parser() {}
         public Parser(IEnumerable<Tuple<byte, byte>> supported)
@@ -108,6 +110,70 @@ namespace Envis10n.TelNet
                 _buffer = new byte[0];
             }
             return events;
+        }
+
+        public TelnetSendEvent Negotiate(byte command, byte option)
+        {
+            return new TelnetSendEvent(TelnetNegotiationEvent.Build(command, option).ToBytes());
+        }
+        public TelnetSendEvent Will(byte option)
+        {
+            var opt = Options.GetOption(option);
+            if (opt.Local && !opt.LocalState)
+            {
+                opt.LocalState = true;
+                Options.SetOption(option, opt);
+                return Negotiate(TelnetCommand.WILL, option);
+            }
+            return null;
+        }
+        public TelnetSendEvent Wont(byte option)
+        {
+            var opt = Options.GetOption(option);
+            if (opt.LocalState)
+            {
+                opt.LocalState = false;
+                Options.SetOption(option, opt);
+                return Negotiate(TelnetCommand.WONT, option);
+            }
+            return null;
+        }
+        public TelnetSendEvent Do(byte option)
+        {
+            var opt = Options.GetOption(option);
+            if (opt.Remote && !opt.RemoteState)
+            {
+                return Negotiate(TelnetCommand.DO, option);
+            }
+            return null;
+        }
+        public TelnetSendEvent Dont(byte option)
+        {
+            var opt = Options.GetOption(option);
+            if (opt.RemoteState)
+            {
+                return Negotiate(TelnetCommand.DONT, option);
+            }
+            return null;
+        }
+
+        public TelnetSendEvent SubNegotiation(byte option, byte[] data)
+        {
+            var opt = Options.GetOption(option);
+            if (opt.Local && opt.LocalState)
+            {
+                return new TelnetSendEvent(TelnetSubNegotiationEvent.Build(option, data).ToBytes());
+            }
+            return null;
+        }
+        public TelnetSendEvent SubNegotiation(byte option, string content)
+        {
+            var opt = Options.GetOption(option);
+            if (opt.Local && opt.LocalState)
+            {
+                return new TelnetSendEvent(TelnetSubNegotiationEvent.Build(option, content, TextEncoding).ToBytes());
+            }
+            return null;
         }
         public static byte[] EscapeIac(byte[] buffer)
         {
