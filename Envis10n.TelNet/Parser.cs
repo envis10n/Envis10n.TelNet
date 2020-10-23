@@ -150,11 +150,7 @@ namespace Envis10n.TelNet
         public TelnetSendEvent Dont(byte option)
         {
             var opt = Options.GetOption(option);
-            if (opt.RemoteState)
-            {
-                return Negotiate(TelnetCommand.DONT, option);
-            }
-            return null;
+            return opt.RemoteState ? Negotiate(TelnetCommand.DONT, option) : null;
         }
 
         public TelnetSendEvent SubNegotiation(byte option, byte[] data)

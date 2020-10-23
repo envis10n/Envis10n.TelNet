@@ -5,8 +5,6 @@ using System.Text;
 using Envis10n.TelNet.Constants;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// TODO: Add tests for negotiation and subnegotiation methods on Parser.
-
 namespace Envis10n.TelNet.Tests
 {
     [TestClass]

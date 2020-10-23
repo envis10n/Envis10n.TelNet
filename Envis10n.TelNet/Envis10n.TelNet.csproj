@@ -2,6 +2,19 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>Envis10n.TelNet</Title>
+        <Authors>envis10n</Authors>
+        <RepositoryUrl>https://github.com/envis10n/Envis10n.TelNet</RepositoryUrl>
+        <Company>Envis10n</Company>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <Copyright>envis10n &lt;envis10n@envis10n.dev&gt;</Copyright>
+        <PackageTags>telnet, networking</PackageTags>
+        <Description>A telnet parser based on libtelnet-rs.</Description>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageProjectUrl>https://github.com/envis10n/Envis10n.TelNet</PackageProjectUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageVersion>1.0.1</PackageVersion>
     </PropertyGroup>
 
 </Project>

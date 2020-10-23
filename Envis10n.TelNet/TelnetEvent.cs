@@ -33,7 +33,6 @@ namespace Envis10n.TelNet
         {
             return Parser.EscapeIac(Buffer);
         }
-
         public static TelnetDataEvent Build(byte[] buffer)
         {
             return new TelnetDataEvent(buffer);            
@@ -46,7 +45,7 @@ namespace Envis10n.TelNet
 
         public TelnetSendEvent(byte[] buffer)
         {
-            Buffer = Parser.EscapeIac(buffer);
+            Buffer = buffer;
         }
         public byte[] ToBytes()
         {
@@ -68,7 +67,7 @@ namespace Envis10n.TelNet
         }
         public byte[] ToBytes()
         {
-            return Parser.EscapeIac(Buffer);
+            return Buffer;
         }
         public static TelnetDecompressEvent Build(byte[] buffer)
         {
@@ -155,7 +154,6 @@ namespace Envis10n.TelNet
         }
         public static TelnetSubNegotiationEvent Build(byte option, byte[] data)
         {
-            data = Parser.EscapeIac(data);
             byte[] buffer = new byte[data.Length + 5];
             buffer[0] = 255;
             buffer[1] = TelnetCommand.SB;
